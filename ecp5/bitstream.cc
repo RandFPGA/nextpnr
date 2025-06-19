@@ -49,7 +49,7 @@ void config_empty_lfe5um5g_85f(ChipConfig &cc);
 namespace {
 struct ECP5Bitgen
 {
-    explicit ECP5Bitgen(Context *ctx) : ctx(ctx) {};
+    explicit ECP5Bitgen(Context *ctx) : ctx(ctx){};
     Context *ctx;
     ChipConfig cc;
     std::string get_trellis_wirename(Location loc, WireId wire)
@@ -765,7 +765,7 @@ struct ECP5Bitgen
         int lut_init = int_or_default(ci->params, id_INITVAL);
         cc.tiles[tname].add_enum(slice + ".MODE", mode);
         cc.tiles[tname].add_word(slice + ".K" + lc + ".INIT",
-                                 int_to_bitvector(permute_lut(ci, used_phys_pins, lut_init), 16));
+                                 int_to_bitvector(permute_lut(ci, used_phys_pins, lut_init), 16), ci->name.str(ctx));
         if (mode == "CCU2") {
             cc.tiles[tname].add_enum(slice + ".CCU2.INJECT1_" + lc, str_or_default(ci->params, id_CCU2_INJECT1, "YES"));
         } else {
@@ -1019,7 +1019,8 @@ struct ECP5Bitgen
         tg.config.add_enum(ebr + ".ASYNC_RESET_RELEASE", str_or_default(ci->params, id_ASYNC_RESET_RELEASE, "SYNC"));
         tg.config.add_enum(ebr + ".GSR", str_or_default(ci->params, id_GSR, "DISABLED"));
 
-        tg.config.add_word(ebr + ".WID", int_to_bitvector(bit_reverse(int_or_default(ci->attrs, id_WID, 0), 9), 9));
+        tg.config.add_word(ebr + ".WID", int_to_bitvector(bit_reverse(int_or_default(ci->attrs, id_WID, 0), 9), 9),
+                           ci->name.str(ctx));
 
         // Tie signals as appropriate
         for (auto port : ci->ports) {
@@ -1079,8 +1080,8 @@ struct ECP5Bitgen
         std::reverse(csd_a.begin(), csd_a.end());
         std::reverse(csd_b.begin(), csd_b.end());
 
-        tg.config.add_word(ebr + ".CSDECODE_A", csd_a);
-        tg.config.add_word(ebr + ".CSDECODE_B", csd_b);
+        tg.config.add_word(ebr + ".CSDECODE_A", csd_a, ci->name.str(ctx));
+        tg.config.add_word(ebr + ".CSDECODE_B", csd_b, ci->name.str(ctx));
 
         std::vector<uint16_t> init_data;
         init_data.resize(2048, 0x0);
@@ -1179,18 +1180,26 @@ struct ECP5Bitgen
         tg.config.add_enum(dsp + ".REG_FLAG_CLK", str_or_default(ci->params, id_REG_FLAG_CLK, "NONE"));
         tg.config.add_enum(dsp + ".MCPAT_SOURCE", str_or_default(ci->params, id_MCPAT_SOURCE, "STATIC"));
         tg.config.add_enum(dsp + ".MASKPAT_SOURCE", str_or_default(ci->params, id_MASKPAT_SOURCE, "STATIC"));
-        tg.config.add_word(dsp + ".MASK01", parse_init_str(str_or_default(ci->params, id_MASK01, "0x00000000000000"),
-                                                           56, ci->name.c_str(ctx)));
+        tg.config.add_word(
+                dsp + ".MASK01",
+                parse_init_str(str_or_default(ci->params, id_MASK01, "0x00000000000000"), 56, ci->name.c_str(ctx)),
+                ci->name.str(ctx));
         tg.config.add_enum(dsp + ".CLK0_DIV", str_or_default(ci->params, id_CLK0_DIV, "ENABLED"));
         tg.config.add_enum(dsp + ".CLK1_DIV", str_or_default(ci->params, id_CLK1_DIV, "ENABLED"));
         tg.config.add_enum(dsp + ".CLK2_DIV", str_or_default(ci->params, id_CLK2_DIV, "ENABLED"));
         tg.config.add_enum(dsp + ".CLK3_DIV", str_or_default(ci->params, id_CLK3_DIV, "ENABLED"));
-        tg.config.add_word(dsp + ".MCPAT", parse_init_str(str_or_default(ci->params, id_MCPAT, "0x00000000000000"), 56,
-                                                          ci->name.c_str(ctx)));
-        tg.config.add_word(dsp + ".MASKPAT", parse_init_str(str_or_default(ci->params, id_MASKPAT, "0x00000000000000"),
-                                                            56, ci->name.c_str(ctx)));
-        tg.config.add_word(dsp + ".RNDPAT", parse_init_str(str_or_default(ci->params, id_RNDPAT, "0x00000000000000"),
-                                                           56, ci->name.c_str(ctx)));
+        tg.config.add_word(
+                dsp + ".MCPAT",
+                parse_init_str(str_or_default(ci->params, id_MCPAT, "0x00000000000000"), 56, ci->name.c_str(ctx)),
+                ci->name.str(ctx));
+        tg.config.add_word(
+                dsp + ".MASKPAT",
+                parse_init_str(str_or_default(ci->params, id_MASKPAT, "0x00000000000000"), 56, ci->name.c_str(ctx)),
+                ci->name.str(ctx));
+        tg.config.add_word(
+                dsp + ".RNDPAT",
+                parse_init_str(str_or_default(ci->params, id_RNDPAT, "0x00000000000000"), 56, ci->name.c_str(ctx)),
+                ci->name.str(ctx));
         tg.config.add_enum(dsp + ".GSR", str_or_default(ci->params, id_GSR, "ENABLED"));
         tg.config.add_enum(dsp + ".RESETMODE", str_or_default(ci->params, id_RESETMODE, "SYNC"));
         tg.config.add_enum(dsp + ".FORCE_ZERO_BARREL_SHIFT",
@@ -1228,8 +1237,10 @@ struct ECP5Bitgen
 
         tg.config.add_enum("MODE", "EHXPLLL");
 
-        tg.config.add_word("CLKI_DIV", int_to_bitvector(int_or_default(ci->params, id_CLKI_DIV, 1) - 1, 7));
-        tg.config.add_word("CLKFB_DIV", int_to_bitvector(int_or_default(ci->params, id_CLKFB_DIV, 1) - 1, 7));
+        tg.config.add_word("CLKI_DIV", int_to_bitvector(int_or_default(ci->params, id_CLKI_DIV, 1) - 1, 7),
+                           ci->name.str(ctx));
+        tg.config.add_word("CLKFB_DIV", int_to_bitvector(int_or_default(ci->params, id_CLKFB_DIV, 1) - 1, 7),
+                           ci->name.str(ctx));
 
         tg.config.add_enum("CLKOP_ENABLE", str_or_default(ci->params, id_CLKOP_ENABLE, "ENABLED"));
         tg.config.add_enum("CLKOS_ENABLE", str_or_default(ci->params, id_CLKOS_ENABLE, "ENABLED"));
@@ -1238,11 +1249,14 @@ struct ECP5Bitgen
 
         for (std::string out : {"CLKOP", "CLKOS", "CLKOS2", "CLKOS3"}) {
             tg.config.add_word(out + "_DIV",
-                               int_to_bitvector(int_or_default(ci->params, ctx->id(out + "_DIV"), 8) - 1, 7));
+                               int_to_bitvector(int_or_default(ci->params, ctx->id(out + "_DIV"), 8) - 1, 7),
+                               ci->name.str(ctx));
             tg.config.add_word(out + "_CPHASE",
-                               int_to_bitvector(int_or_default(ci->params, ctx->id(out + "_CPHASE"), 0), 7));
+                               int_to_bitvector(int_or_default(ci->params, ctx->id(out + "_CPHASE"), 0), 7),
+                               ci->name.str(ctx));
             tg.config.add_word(out + "_FPHASE",
-                               int_to_bitvector(int_or_default(ci->params, ctx->id(out + "_FPHASE"), 0), 3));
+                               int_to_bitvector(int_or_default(ci->params, ctx->id(out + "_FPHASE"), 0), 3),
+                               ci->name.str(ctx));
         }
 
         tg.config.add_enum("FEEDBK_PATH", str_or_default(ci->params, id_FEEDBK_PATH, "CLKOP"));
@@ -1460,8 +1474,8 @@ struct ECP5Bitgen
             } else if (ci->type == id_TRELLIS_RAMW) {
                 std::string tname = ctx->get_tile_by_type_loc(bel.location.y, bel.location.x, "PLC2");
                 cc.tiles[tname].add_enum("SLICEC.MODE", "RAMW");
-                cc.tiles[tname].add_word("SLICEC.K0.INIT", std::vector<bool>(16, false));
-                cc.tiles[tname].add_word("SLICEC.K1.INIT", std::vector<bool>(16, false));
+                cc.tiles[tname].add_word("SLICEC.K0.INIT", std::vector<bool>(16, false), ci->name.c_str(ctx));
+                cc.tiles[tname].add_word("SLICEC.K1.INIT", std::vector<bool>(16, false), ci->name.str(ctx));
             } else if (ci->type == id_TRELLIS_IO) {
                 write_io(ci);
             } else if (ci->type == id_DCCA) {

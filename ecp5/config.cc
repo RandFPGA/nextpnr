@@ -154,7 +154,8 @@ std::istream &operator>>(std::istream &in, ConfigArc &arc)
 
 std::ostream &operator<<(std::ostream &out, const ConfigWord &cw)
 {
-    out << "word: " << cw.name << " " << to_string(cw.value) << std::endl;
+    out << "word: " << cw.name << " " << to_string(cw.value) << (cw.netlistName != "" ? " # " + cw.netlistName : "")
+        << std::endl;
     return out;
 }
 
@@ -241,7 +242,10 @@ std::istream &operator>>(std::istream &in, TileConfig &tc)
 
 void TileConfig::add_arc(const std::string &sink, const std::string &source) { carcs.push_back({sink, source}); }
 
-void TileConfig::add_word(const std::string &name, const std::vector<bool> &value) { cwords.push_back({name, value}); }
+void TileConfig::add_word(const std::string &name, const std::vector<bool> &value, const std::string &netlistName)
+{
+    cwords.push_back({name, value, netlistName});
+}
 
 void TileConfig::add_enum(const std::string &name, const std::string &value) { cenums.push_back({name, value}); }
 

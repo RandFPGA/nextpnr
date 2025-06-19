@@ -34,6 +34,7 @@ struct ConfigArc
     std::string sink;
     std::string source;
     inline bool operator==(const ConfigArc &other) const { return other.source == source && other.sink == sink; }
+    std::string belName;
 };
 
 std::ostream &operator<<(std::ostream &out, const ConfigArc &arc);
@@ -46,6 +47,7 @@ struct ConfigWord
     std::string name;
     std::vector<bool> value;
     inline bool operator==(const ConfigWord &other) const { return other.name == name && other.value == value; }
+    std::string netlistName;
 };
 
 std::ostream &operator<<(std::ostream &out, const ConfigWord &cw);
@@ -84,7 +86,7 @@ struct TileConfig
     int total_known_bits = 0;
 
     void add_arc(const std::string &sink, const std::string &source);
-    void add_word(const std::string &name, const std::vector<bool> &value);
+    void add_word(const std::string &name, const std::vector<bool> &value, const std::string &netlistName = "");
     void add_enum(const std::string &name, const std::string &value);
     void add_unknown(int frame, int bit);
 
